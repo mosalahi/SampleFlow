@@ -122,7 +122,7 @@
   .card .card-b{padding:1.25rem;}
 
   /* ---- entry form ---- */
-  .meta-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:1.5rem;}
+  .meta-row{display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:1rem; margin-bottom:1.5rem;}
   .locked{background:var(--petrol-50); border-style:dashed; color:var(--petrol-700); font-weight:600;}
   .grid-tests{display:grid; grid-template-columns:repeat(3,1fr); gap:1rem;}
   .test-cell{border:1px solid var(--line); border-radius:11px; padding:.75rem .85rem; background:#fbfdfd;}
@@ -176,7 +176,8 @@
   .foot-note{margin-top:2rem; text-align:center; color:var(--muted); font-size:.78rem;}
 
   @media (max-width:760px){
-    .meta-row,.grid-tests{grid-template-columns:1fr 1fr;}
+    .meta-row{grid-template-columns:1fr 1fr;}
+    .grid-tests{grid-template-columns:1fr 1fr;}
     .kpis{grid-template-columns:1fr 1fr;}
     .two-col{grid-template-columns:1fr;}
     .topbar .who{display:none;}
@@ -264,17 +265,20 @@
           </div>
           <div>
             <label>التاريخ</label>
-            <input type="text" value="١٤ / ٠٢ / ١٤٤٨ هـ">
+            <input type="text" value="2026/02/14" class="num" style="text-align:center;">
           </div>
           <div>
             <label>عدد المراجعين</label>
             <input class="num" type="text" value="٤٨" style="font-weight:600; text-align:center;">
           </div>
+          <div>
+            <label>عدد الرحلات</label>
+            <input class="num" type="text" value="٣" style="font-weight:600; text-align:center;">
+          </div>
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:.75rem;">
+        <div style="margin-bottom:.75rem;">
           <label style="margin:0;">أعداد العينات حسب نوع التحليل</label>
-          <span style="font-size:.8rem; color:var(--muted);">عدد الرحلات: <b>٣</b></span>
         </div>
 
         <div class="grid-tests">
