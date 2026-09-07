@@ -35,5 +35,8 @@ public class ApplicationDbContext
         // ثم يطبّق كل IEntityTypeConfiguration في هذا التجميع
         // (يشمل تهيئة ApplicationUser، فتُطبَّق بعد إعدادات Identity الأساسية).
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        // بذر البيانات المرجعية الثابتة (يُدرَج ضمن الـ Migration).
+        SeedData.Apply(builder);
     }
 }
