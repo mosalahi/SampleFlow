@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SampleFlow.Domain.Authorization;
 using SampleFlow.Domain.Entities;
 using SampleFlow.Infrastructure.Data;
+using SampleFlow.Infrastructure.Identity;
 using SampleFlow.Web.Models;
 
 namespace SampleFlow.Web.Controllers;
