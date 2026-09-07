@@ -1,15 +1,134 @@
+@model DailyEntryViewModel
 @{
-    ViewData["Title"] = "إدخال المركز اليومي";
-    ViewData["Subtitle"] = "شاشة الإدخال";
+    ViewData["Title"] = "إدخال بيانات اليوم";
+    ViewData["Subtitle"] = Model.IsCenterLocked ? Model.CenterName : "شاشة الإدخال";
+    var readOnly = !Model.CanEdit;
 }
+
 <div class="page-head">
     <div>
-        <h2>إدخال بيانات اليوم <span class="badge-soon">قيد الإنشاء</span></h2>
-        <div class="desc">حقول التحاليل تُبنى ديناميكياً من الأنواع النشطة — تُبنى الشاشة في المرحلة 5.</div>
+        <h2>إدخال بيانات اليوم</h2>
+        <div class="desc">سجّل أعداد المراجعين والرحلات والعينات ليوم واحد فقط</div>
     </div>
 </div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="alert-ok" role="status">@ok</div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="alert-error" role="alert">@err</div>
+}
+@if (Model.AlreadyExists && readOnly)
+{
+    <div class="alert-warn" role="status">يوجد إدخال مسجّل لهذا اليوم، ولا تملك صلاحية تعديله. القيم معروضة للاطلاع فقط.</div>
+}
+
 <div class="card">
     <div class="card-b">
-        وصلت إلى شاشة الإدخال لأن حسابك يملك صلاحية <code>Entries.Create</code>. سيتم بناء نموذج الإدخال في المرحلة 5.
+        <form asp-controller="Entry" asp-action="Index" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert-error"></div>
+
+            <fieldset @(readOnly ? "disabled" : "") style="border:0; padding:0; margin:0;">
+                <div class="meta-row">
+                    <div>
+                        <label>المركز</label>
+                        @if (Model.IsCenterLocked)
+                        {
+                            <input class="locked" value="@Model.CenterName" readonly />
+                            <input type="hidden" asp-for="CenterId" />
+                        }
+                        else
+                        {
+                            <select asp-for="CenterId" asp-items="Model.CenterOptions"
+                                    onchange="reloadFor(this.value)"></select>
+                            <span asp-validation-for="CenterId" class="field-validation-error"></span>
+                        }
+                    </div>
+                    <div>
+                        <label asp-for="EntryDate"></label>
+                        <input asp-for="EntryDate" type="date" onchange="reloadDate(this.value)" />
+                        <span asp-validation-for="EntryDate" class="field-validation-error"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Visitors"></label>
+                        <input asp-for="Visitors" type="number" min="0" style="text-align:center; font-weight:600;" />
+                        <span asp-validation-for="Visitors" class="field-validation-error"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Trips"></label>
+                        <input asp-for="Trips" type="number" min="0" style="text-align:center; font-weight:600;" />
+                        <span asp-validation-for="Trips" class="field-validation-error"></span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:.75rem;">
+                    <label style="margin:0;">أعداد العينات حسب نوع التحليل</label>
+                </div>
+
+                @if (Model.Samples.Count == 0)
+                {
+                    <div class="alert-warn">لا توجد أنواع تحاليل نشطة. أضِفها من لوحة الإدارة أولاً.</div>
+                }
+                else
+                {
+                    <div class="grid-tests">
+                        @for (var i = 0; i < Model.Samples.Count; i++)
+                        {
+                            <div class="test-cell">
+                                <div class="t-name"><span>@Model.Samples[i].Name</span></div>
+                                <input type="hidden" asp-for="Samples[i].SampleTypeId" />
+                                <input type="hidden" asp-for="Samples[i].Code" />
+                                <input type="hidden" asp-for="Samples[i].Name" />
+                                <input asp-for="Samples[i].Count" type="number" min="0"
+                                       class="sample-count" oninput="recalcTotal()" />
+                                <span asp-validation-for="Samples[i].Count" class="field-validation-error"></span>
+                            </div>
+                        }
+                    </div>
+                }
+            </fieldset>
+
+            <div class="form-foot">
+                @if (!readOnly)
+                {
+                    <button type="submit" class="btn btn-amber btn-sm">
+                        @(Model.AlreadyExists ? "تحديث بيانات اليوم" : "حفظ بيانات اليوم")
+                    </button>
+                }
+                <span class="note">
+                    <span class="dot"></span> إجمالي عينات اليوم:
+                    <b>&nbsp;<span id="total">@Model.TotalSamples</span> عينة</b>
+                </span>
+            </div>
+        </form>
     </div>
 </div>
+
+<p class="foot-note">بعد الحفظ تُرحّل البيانات تلقائياً إلى لوحة المشرف — بدون تجميع يدوي</p>
+
+@section Scripts {
+    <script>
+        function recalcTotal() {
+            var sum = 0;
+            document.querySelectorAll('.sample-count').forEach(function (el) {
+                var v = parseInt(el.value, 10);
+                if (!isNaN(v)) sum += v;
+            });
+            document.getElementById('total').textContent = sum;
+        }
+        function currentDate() {
+            var d = document.querySelector('input[name="EntryDate"]');
+            return d ? d.value : '';
+        }
+        function reloadFor(centerId) {
+            window.location = '?centerId=' + encodeURIComponent(centerId) + '&date=' + encodeURIComponent(currentDate());
+        }
+        function reloadDate(date) {
+            var sel = document.querySelector('select[name="CenterId"]');
+            var c = sel ? '&centerId=' + encodeURIComponent(sel.value) : '';
+            window.location = '?date=' + encodeURIComponent(date) + c;
+        }
+    </script>
+}
