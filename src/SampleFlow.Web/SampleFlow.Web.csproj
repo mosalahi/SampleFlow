@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>SampleFlow.Web</RootNamespace>
+    <UserSecretsId>sampleflow-web-secrets</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

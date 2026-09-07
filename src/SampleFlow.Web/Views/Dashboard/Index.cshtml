@@ -1,15 +1,180 @@
+@model DashboardViewModel
 @{
     ViewData["Title"] = "لوحة المشرف";
     ViewData["Subtitle"] = "لوحة المشرف";
+    string d(DateOnly x) => x.ToString("yyyy-MM-dd");
 }
+
 <div class="page-head">
     <div>
-        <h2>التجميع اليومي <span class="badge-soon">قيد الإنشاء</span></h2>
-        <div class="desc">نظرة موحّدة على جميع المراكز — تُبنى في مرحلة لاحقة (KPIs + فلترة + جدول تجميعي + رسوم).</div>
+        <h2>التجميع اليومي</h2>
+        <div class="desc">نظرة موحّدة على جميع المراكز — تُحدّث لحظياً مع كل إدخال</div>
+    </div>
+    <div class="spacer"></div>
+    <button type="button" class="btn btn-ghost btn-sm" disabled title="قريباً — المرحلة 7">تصدير Excel</button>
+    <button type="button" class="btn btn-sm" style="width:auto;" disabled title="قريباً — المرحلة 7">تصدير PDF</button>
+</div>
+
+<!-- KPIs -->
+<div class="kpis">
+    <div class="kpi">
+        <div class="k-label">إجمالي العينات</div>
+        <div class="k-val num">@Model.TotalSamples</div>
+        <div class="k-sub">خلال الفترة المحددة</div>
+    </div>
+    <div class="kpi amber">
+        <div class="k-label">إجمالي المراجعين</div>
+        <div class="k-val num">@Model.TotalVisitors</div>
+        <div class="k-sub">في @Model.TotalActiveCenters مركز</div>
+    </div>
+    <div class="kpi">
+        <div class="k-label">المراكز التي أدخلت</div>
+        <div class="k-val num">@Model.CentersEntered / @Model.TotalActiveCenters</div>
+        @{ var pending = Model.TotalActiveCenters - Model.CentersEntered; }
+        <div class="k-sub @(pending > 0 ? "warn" : "")"><b>@pending مركز</b> لم تُدخل بعد</div>
+    </div>
+    <div class="kpi amber">
+        <div class="k-label">الأعلى نشاطاً</div>
+        <div class="k-val" style="font-size:1.25rem; padding-top:.35rem;">@(Model.TopCenterName ?? "—")</div>
+        <div class="k-sub">@Model.TopCenterSamples عينة</div>
     </div>
 </div>
-<div class="card">
-    <div class="card-b">
-        وصلت إلى لوحة المشرف لأن حسابك يملك صلاحية <code>Entries.ViewAny</code>. سيتم بناء محتوى اللوحة في المرحلة 6.
+
+<!-- filter -->
+<form method="get" asp-controller="Dashboard" asp-action="Index" class="filterbar">
+    <div class="f">
+        <label>من تاريخ</label>
+        <input type="date" name="from" value="@d(Model.Filter.From)" />
+    </div>
+    <div class="f">
+        <label>إلى تاريخ</label>
+        <input type="date" name="to" value="@d(Model.Filter.To)" />
+    </div>
+    <div class="f">
+        <label>المركز</label>
+        <select name="centerId">
+            <option value="">كل المراكز</option>
+            @foreach (var c in Model.CenterOptions)
+            {
+                <option value="@c.Value" selected="@c.Selected">@c.Text</option>
+            }
+        </select>
+    </div>
+    <div class="f">
+        <label>نوع التحليل</label>
+        <select name="sampleTypeId">
+            <option value="">كل الأنواع</option>
+            @foreach (var s in Model.SampleTypeOptions)
+            {
+                <option value="@s.Value" selected="@s.Selected">@s.Text</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-sm" style="width:auto;">تطبيق</button>
+</form>
+
+<!-- table -->
+<div class="table-scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>المركز</th>
+                <th>الحالة</th>
+                <th>المراجعون</th>
+                @foreach (var col in Model.Columns)
+                {
+                    <th>@col.Code</th>
+                }
+                <th>إجمالي</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Rows.Count == 0)
+            {
+                <tr><td colspan="@(Model.Columns.Count + 4)">لا توجد مراكز نشطة.</td></tr>
+            }
+            @foreach (var row in Model.Rows)
+            {
+                <tr class="@(row.Entered ? "" : "pending")">
+                    <td>@row.CenterName</td>
+                    <td>
+                        @if (row.Entered)
+                        {
+                            <span class="pill ok">أُدخلت</span>
+                        }
+                        else
+                        {
+                            <span class="pill no">بانتظار</span>
+                        }
+                    </td>
+                    <td class="num">@(row.Entered ? row.Visitors.ToString() : "—")</td>
+                    @foreach (var col in Model.Columns)
+                    {
+                        <td class="num">@(row.Entered ? row.Counts[col.Id].ToString() : "—")</td>
+                    }
+                    <td class="num"><b>@(row.Entered ? row.Total.ToString() : "—")</b></td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>الإجمالي (@Model.CentersEntered مركز)</td>
+                <td>—</td>
+                <td class="num">@Model.TotalVisitors</td>
+                @foreach (var col in Model.Columns)
+                {
+                    <td class="num">@Model.ColumnTotals[col.Id]</td>
+                }
+                <td class="num">@Model.TotalSamples</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<div class="two-col">
+    <div class="card">
+        <div class="card-h"><h3>العينات حسب المركز</h3><span class="hint">أعلى ٦ مراكز</span></div>
+        <div class="card-b">
+            @if (Model.SamplesByCenter.Count == 0)
+            {
+                <div class="desc">لا توجد بيانات في الفترة المحددة.</div>
+            }
+            else
+            {
+                <div class="bars">
+                    @foreach (var b in Model.SamplesByCenter)
+                    {
+                        <div class="bar-row">
+                            <span>@b.Label</span>
+                            <div class="bar-track"><div class="bar-fill" style="width:@(b.Percent)%"></div></div>
+                            <span class="bar-val num">@b.Value</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-h"><h3>توزيع أنواع التحاليل</h3></div>
+        <div class="card-b">
+            @if (Model.TypeDistribution.Count == 0)
+            {
+                <div class="desc">لا توجد بيانات في الفترة المحددة.</div>
+            }
+            else
+            {
+                <div class="bars">
+                    @foreach (var b in Model.TypeDistribution)
+                    {
+                        <div class="bar-row">
+                            <span>@b.Label</span>
+                            <div class="bar-track"><div class="bar-fill" style="width:@(b.Percent)%"></div></div>
+                            <span class="bar-val num">@b.Value</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
     </div>
 </div>
