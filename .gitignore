@@ -1,0 +1,29 @@
+## .NET / build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+[Oo]ut/
+
+## User-specific / IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userprefs
+
+## Rider
+*.sln.iml
+
+## dotnet tools / test results
+project.lock.json
+*.trx
+TestResults/
+
+## Environment / secrets — never commit real connection strings
+appsettings.*.local.json
+*.env
