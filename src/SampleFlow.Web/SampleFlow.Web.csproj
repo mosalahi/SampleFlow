@@ -9,7 +9,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
+    <PackageReference Include="QuestPDF" Version="2024.12.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SampleFlow.Infrastructure\SampleFlow.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- خطوط Amiri (OFL) لتصدير PDF بالعربية — تُنسخ لمجلد الإخراج وتُسجَّل عند الإقلاع. -->
+    <Content Include="Fonts\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
