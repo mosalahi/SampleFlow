@@ -11,8 +11,12 @@
         <div class="desc">نظرة موحّدة على جميع المراكز — تُحدّث لحظياً مع كل إدخال</div>
     </div>
     <div class="spacer"></div>
-    <button type="button" class="btn btn-ghost btn-sm" disabled title="قريباً — المرحلة 7">تصدير Excel</button>
-    <button type="button" class="btn btn-sm" style="width:auto;" disabled title="قريباً — المرحلة 7">تصدير PDF</button>
+    <a class="btn btn-ghost btn-sm" asp-controller="Export" asp-action="Excel"
+       asp-route-from="@d(Model.Filter.From)" asp-route-to="@d(Model.Filter.To)"
+       asp-route-centerId="@Model.Filter.CenterId" asp-route-sampleTypeId="@Model.Filter.SampleTypeId">تصدير Excel</a>
+    <a class="btn btn-sm" style="width:auto;" asp-controller="Export" asp-action="Pdf"
+       asp-route-from="@d(Model.Filter.From)" asp-route-to="@d(Model.Filter.To)"
+       asp-route-centerId="@Model.Filter.CenterId" asp-route-sampleTypeId="@Model.Filter.SampleTypeId">تصدير PDF</a>
 </div>
 
 <!-- KPIs -->

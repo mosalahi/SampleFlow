@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using QuestPDF.Drawing;
+using QuestPDF.Infrastructure;
 using SampleFlow.Infrastructure.Auditing;
 using SampleFlow.Infrastructure.Data;
 using SampleFlow.Infrastructure.Data.Seeding;
@@ -9,6 +11,18 @@ using SampleFlow.Web.Authorization;
 using SampleFlow.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// QuestPDF: ترخيص Community + تسجيل خطوط Amiri العربية (RTL) للتصدير.
+QuestPDF.Settings.License = LicenseType.Community;
+var fontsDir = Path.Combine(builder.Environment.ContentRootPath, "Fonts");
+if (Directory.Exists(fontsDir))
+{
+    foreach (var ttf in Directory.GetFiles(fontsDir, "*.ttf"))
+    {
+        using var fontStream = File.OpenRead(ttf);
+        FontManager.RegisterFont(fontStream);
+    }
+}
 
 builder.Services.AddControllersWithViews();
 
@@ -48,6 +62,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
     options.SlidingExpiration = true;
 });
+
+// خدمة تجميع لوحة المشرف (تُستخدم في اللوحة والتصدير).
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // تفويض مبني على الصلاحيات عبر سياسات ديناميكية.
 builder.Services.AddScoped<IPermissionService, PermissionService>();
