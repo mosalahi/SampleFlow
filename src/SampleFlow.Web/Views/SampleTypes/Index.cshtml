@@ -1,0 +1,53 @@
+@model List<SampleFlow.Domain.Entities.SampleType>
+@{
+    ViewData["Title"] = "أنواع التحاليل";
+    ViewData["Subtitle"] = "لوحة الإدارة";
+}
+
+<div class="toolbar">
+    <div>
+        <h2 style="font-size:1.35rem;">أنواع التحاليل</h2>
+        <div class="desc">تُبنى شاشة الإدخال منها تلقائياً حسب ترتيب الظهور.</div>
+    </div>
+    <div class="spacer"></div>
+    <a class="btn btn-sm" asp-action="Create">+ نوع جديد</a>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="alert-ok">@ok</div>
+}
+
+<div class="table-scroll">
+    <table>
+        <thead>
+            <tr><th>الترتيب</th><th>الرمز</th><th>الاسم</th><th>الحالة</th><th>إجراءات</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var t in Model)
+            {
+                <tr class="@(t.IsActive ? "" : "inactive-row")">
+                    <td class="num">@t.DisplayOrder</td>
+                    <td>@t.Code</td>
+                    <td>@t.Name</td>
+                    <td>
+                        @if (t.IsActive)
+                        {
+                            <span class="pill ok">نشط</span>
+                        }
+                        else
+                        {
+                            <span class="pill muted">معطّل</span>
+                        }
+                    </td>
+                    <td>
+                        <a class="btn btn-ghost btn-sm" asp-action="Edit" asp-route-id="@t.Id">تعديل</a>
+                        <form asp-action="ToggleActive" asp-route-id="@t.Id" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-ghost btn-sm">@(t.IsActive ? "تعطيل" : "تفعيل")</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

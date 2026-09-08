@@ -1,0 +1,73 @@
+@model UserPermissionsViewModel
+@{
+    ViewData["Title"] = "صلاحيات المستخدم";
+    ViewData["Subtitle"] = "لوحة الإدارة";
+    string CatLabel(string c) => c switch
+    {
+        "Entries" => "الإدخالات",
+        "Reports" => "التقارير",
+        "Administration" => "الإدارة",
+        _ => c,
+    };
+    string? lastCategory = null;
+}
+
+<div class="page-head">
+    <div>
+        <h2>الصلاحيات الفردية</h2>
+        <div class="desc">@Model.Email — «موروث» يتبع الدور، و«منح»/«سحب» يتجاوزانه. تُطبّق فوراً.</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-b">
+        <form asp-action="Permissions" method="post">
+            <input type="hidden" asp-for="UserId" />
+            <input type="hidden" asp-for="Email" />
+
+            @for (var i = 0; i < Model.Rows.Count; i++)
+            {
+                if (Model.Rows[i].Category != lastCategory)
+                {
+                    lastCategory = Model.Rows[i].Category;
+                    <div class="perm-group">
+                        <h4>@CatLabel(lastCategory)</h4>
+                    </div>
+                }
+
+                <input type="hidden" asp-for="Rows[i].PermissionId" />
+                <div class="perm-row">
+                    <div>
+                        <div style="font-weight:500;">@Model.Rows[i].Name</div>
+                        <div class="desc" style="font-size:.78rem;">
+                            <code>@Model.Rows[i].Key</code>
+                            @if (Model.Rows[i].RoleGrants)
+                            {
+                                <span class="pill ok" style="margin-inline-start:.4rem;">يمنحها الدور</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="seg">
+                        <label>
+                            <input type="radio" asp-for="Rows[i].State" value="inherit" />
+                            <span>موروث</span>
+                        </label>
+                        <label>
+                            <input type="radio" asp-for="Rows[i].State" value="grant" />
+                            <span>منح</span>
+                        </label>
+                        <label>
+                            <input type="radio" asp-for="Rows[i].State" value="revoke" />
+                            <span>سحب</span>
+                        </label>
+                    </div>
+                </div>
+            }
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-amber btn-sm">حفظ الصلاحيات</button>
+                <a class="btn btn-ghost btn-sm" asp-action="Index">رجوع</a>
+            </div>
+        </form>
+    </div>
+</div>

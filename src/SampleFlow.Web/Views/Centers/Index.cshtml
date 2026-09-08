@@ -1,0 +1,53 @@
+@model List<SampleFlow.Domain.Entities.Center>
+@{
+    ViewData["Title"] = "إدارة المراكز";
+    ViewData["Subtitle"] = "لوحة الإدارة";
+}
+
+<div class="toolbar">
+    <div>
+        <h2 style="font-size:1.35rem;">المراكز</h2>
+        <div class="desc">إضافة وتعطيل المراكز (التعطيل بدل الحذف يحافظ على الإدخالات).</div>
+    </div>
+    <div class="spacer"></div>
+    <a class="btn btn-sm" asp-action="Create">+ مركز جديد</a>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="alert-ok">@ok</div>
+}
+
+<div class="table-scroll">
+    <table>
+        <thead>
+            <tr><th>#</th><th>الاسم</th><th>الحالة</th><th>أُنشئ</th><th>إجراءات</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr class="@(c.IsActive ? "" : "inactive-row")">
+                    <td class="num">@c.Id</td>
+                    <td>@c.Name</td>
+                    <td>
+                        @if (c.IsActive)
+                        {
+                            <span class="pill ok">نشط</span>
+                        }
+                        else
+                        {
+                            <span class="pill muted">معطّل</span>
+                        }
+                    </td>
+                    <td class="num">@c.CreatedAt.ToString("yyyy/MM/dd")</td>
+                    <td>
+                        <a class="btn btn-ghost btn-sm" asp-action="Edit" asp-route-id="@c.Id">تعديل</a>
+                        <form asp-action="ToggleActive" asp-route-id="@c.Id" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-ghost btn-sm">@(c.IsActive ? "تعطيل" : "تفعيل")</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

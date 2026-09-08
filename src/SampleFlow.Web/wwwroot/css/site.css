@@ -115,6 +115,33 @@ input:focus, select:focus { outline: none; border-color: var(--petrol); box-shad
 .btn-sm { width: auto; padding: .5rem .9rem; font-size: .85rem; }
 a.btn { display: inline-block; text-decoration: none; text-align: center; }
 
+/* app nav */
+.app-nav { background: var(--petrol-700); }
+.app-nav-inner { max-width: 1080px; margin: 0 auto; padding: 0 1.25rem; display: flex; gap: .25rem; flex-wrap: wrap; }
+.app-nav a { color: #d7e6e8; text-decoration: none; font-size: .85rem; font-weight: 500; padding: .7rem .9rem; border-bottom: 2px solid transparent; }
+.app-nav a:hover { color: #fff; background: rgba(255,255,255,.06); }
+
+/* admin tables/forms */
+.toolbar { display: flex; align-items: center; gap: .6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.toolbar .spacer { margin-inline-start: auto; }
+.inactive-row td { opacity: .55; }
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.form-actions { display: flex; gap: .6rem; margin-top: 1.4rem; flex-wrap: wrap; }
+.pill.muted { background: #eef2f2; color: var(--muted); }
+.perm-group { margin-bottom: 1.25rem; }
+.perm-group h4 { font-size: .9rem; margin-bottom: .5rem; color: var(--petrol-700); }
+.perm-row { display: grid; grid-template-columns: 1fr 320px; align-items: center; gap: 1rem; padding: .5rem 0; border-bottom: 1px solid var(--line); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg label { margin: 0; padding: .35rem .7rem; font-size: .8rem; cursor: pointer; background: #fbfdfd; }
+.seg input { display: none; }
+.seg input:checked + span { color: #fff; }
+.seg label:has(input:checked) { background: var(--petrol); }
+.seg label span { color: var(--ink); }
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .perm-row { grid-template-columns: 1fr; }
+}
+
 /* alerts */
 .alert-ok { background: var(--ok-soft); color: var(--ok); border: 1px solid #bfe3cf; border-radius: 10px; padding: .6rem .85rem; font-size: .88rem; margin-bottom: 1rem; }
 .alert-warn { background: #fbeed9; color: var(--warn); border: 1px solid #f0d6ac; border-radius: 10px; padding: .6rem .85rem; font-size: .88rem; margin-bottom: 1rem; }

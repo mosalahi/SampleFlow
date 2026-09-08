@@ -1,0 +1,37 @@
+@model CenterFormViewModel
+@{
+    var isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? "تعديل مركز" : "مركز جديد";
+    ViewData["Subtitle"] = "لوحة الإدارة";
+}
+
+<div class="page-head">
+    <div><h2>@(isEdit ? "تعديل مركز" : "إضافة مركز")</h2></div>
+</div>
+
+<div class="card" style="max-width:520px;">
+    <div class="card-b">
+        <form asp-action="@(isEdit ? "Edit" : "Create")" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert-error"></div>
+            @if (isEdit)
+            {
+                <input type="hidden" asp-for="Id" />
+            }
+
+            <div class="field">
+                <label asp-for="Name"></label>
+                <input asp-for="Name" autofocus />
+                <span asp-validation-for="Name" class="field-validation-error"></span>
+            </div>
+
+            <label class="checkbox">
+                <input asp-for="IsActive" /> <span>نشط</span>
+            </label>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-amber btn-sm">حفظ</button>
+                <a class="btn btn-ghost btn-sm" asp-action="Index">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>

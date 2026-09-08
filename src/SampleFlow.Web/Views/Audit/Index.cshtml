@@ -1,0 +1,85 @@
+@model AuditIndexViewModel
+@{
+    ViewData["Title"] = "سجل التتبّع";
+    ViewData["Subtitle"] = "لوحة الإدارة";
+    string? d(DateOnly? x) => x?.ToString("yyyy-MM-dd");
+    string ActionLabel(string a) => a switch
+    {
+        "Create" => "إضافة",
+        "Update" => "تعديل",
+        "Delete" => "حذف",
+        "Login" => "دخول",
+        _ => a,
+    };
+}
+
+<div class="page-head">
+    <div>
+        <h2>سجل التتبّع</h2>
+        <div class="desc">كل إضافة/تعديل/حذف/دخول — @Model.TotalCount سجل.</div>
+    </div>
+</div>
+
+<form method="get" asp-action="Index" class="filterbar">
+    <div class="f"><label>من تاريخ</label><input type="date" name="from" value="@d(Model.From)" /></div>
+    <div class="f"><label>إلى تاريخ</label><input type="date" name="to" value="@d(Model.To)" /></div>
+    <div class="f">
+        <label>الإجراء</label>
+        <select name="act">
+            <option value="">الكل</option>
+            @foreach (var a in AuditIndexViewModel.Actions)
+            {
+                <option value="@a" selected="@(Model.Action == a)">@ActionLabel(a)</option>
+            }
+        </select>
+    </div>
+    <div class="f"><label>المستخدم</label><input type="text" name="userName" value="@Model.UserName" /></div>
+    <div class="f"><label>الكيان</label><input type="text" name="entityName" value="@Model.EntityName" /></div>
+    <button type="submit" class="btn btn-sm" style="width:auto;">تطبيق</button>
+</form>
+
+<div class="table-scroll">
+    <table>
+        <thead>
+            <tr><th>الوقت (UTC)</th><th>المستخدم</th><th>الإجراء</th><th>الكيان</th><th>المعرّف</th><th>IP</th></tr>
+        </thead>
+        <tbody>
+            @if (Model.Logs.Count == 0)
+            {
+                <tr><td colspan="6">لا توجد سجلات مطابقة.</td></tr>
+            }
+            @foreach (var log in Model.Logs)
+            {
+                <tr>
+                    <td class="num">@log.Timestamp.ToString("yyyy/MM/dd HH:mm")</td>
+                    <td>@(log.UserName ?? "—")</td>
+                    <td>@ActionLabel(log.Action)</td>
+                    <td>@log.EntityName</td>
+                    <td class="num">@(log.EntityId ?? "—")</td>
+                    <td class="num">@(log.IpAddress ?? "—")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="toolbar" style="margin-top:1rem; justify-content:center;">
+        @if (Model.Page > 1)
+        {
+            <a class="btn btn-ghost btn-sm" asp-action="Index"
+               asp-route-from="@d(Model.From)" asp-route-to="@d(Model.To)" asp-route-act="@Model.Action"
+               asp-route-userName="@Model.UserName" asp-route-entityName="@Model.EntityName"
+               asp-route-page="@(Model.Page - 1)">السابق</a>
+        }
+        <span class="note" style="align-self:center;">صفحة @Model.Page من @Model.TotalPages</span>
+        @if (Model.Page < Model.TotalPages)
+        {
+            <a class="btn btn-ghost btn-sm" asp-action="Index"
+               asp-route-from="@d(Model.From)" asp-route-to="@d(Model.To)" asp-route-act="@Model.Action"
+               asp-route-userName="@Model.UserName" asp-route-entityName="@Model.EntityName"
+               asp-route-page="@(Model.Page + 1)">التالي</a>
+        }
+    </div>
+}

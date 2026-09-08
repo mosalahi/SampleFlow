@@ -1,0 +1,41 @@
+@model List<UserListItemViewModel>
+@{
+    ViewData["Title"] = "المستخدمون";
+    ViewData["Subtitle"] = "لوحة الإدارة";
+}
+
+<div class="toolbar">
+    <div>
+        <h2 style="font-size:1.35rem;">المستخدمون والصلاحيات</h2>
+        <div class="desc">إنشاء الحسابات، تعيين الأدوار والمراكز، وضبط الصلاحيات الفردية.</div>
+    </div>
+    <div class="spacer"></div>
+    <a class="btn btn-sm" asp-action="Create">+ مستخدم جديد</a>
+</div>
+
+@if (TempData["Success"] is string ok)
+{
+    <div class="alert-ok">@ok</div>
+}
+
+<div class="table-scroll">
+    <table>
+        <thead>
+            <tr><th>البريد</th><th>الدور</th><th>المركز</th><th>إجراءات</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td>@u.Email</td>
+                    <td>@(string.IsNullOrEmpty(u.Roles) ? "—" : u.Roles)</td>
+                    <td>@(u.CenterName ?? "—")</td>
+                    <td>
+                        <a class="btn btn-ghost btn-sm" asp-action="Edit" asp-route-id="@u.Id">تعديل</a>
+                        <a class="btn btn-ghost btn-sm" asp-action="Permissions" asp-route-id="@u.Id">الصلاحيات</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

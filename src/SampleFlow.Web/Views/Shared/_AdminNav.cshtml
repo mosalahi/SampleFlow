@@ -1,0 +1,41 @@
+@inject Microsoft.AspNetCore.Authorization.IAuthorizationService Auth
+@{
+    var canDashboard = (await Auth.AuthorizeAsync(User, PermissionKeys.EntriesViewAny)).Succeeded;
+    var canEntry = (await Auth.AuthorizeAsync(User, PermissionKeys.EntriesCreate)).Succeeded;
+    var canCenters = (await Auth.AuthorizeAsync(User, PermissionKeys.CentersManage)).Succeeded;
+    var canTypes = (await Auth.AuthorizeAsync(User, PermissionKeys.SampleTypesManage)).Succeeded;
+    var canUsers = (await Auth.AuthorizeAsync(User, PermissionKeys.UsersManage)).Succeeded;
+    var canAudit = (await Auth.AuthorizeAsync(User, PermissionKeys.AuditView)).Succeeded;
+    var anyLink = canDashboard || canEntry || canCenters || canTypes || canUsers || canAudit;
+}
+@if (anyLink)
+{
+    <nav class="app-nav">
+        <div class="app-nav-inner">
+            @if (canDashboard)
+            {
+                <a asp-controller="Dashboard" asp-action="Index">لوحة المشرف</a>
+            }
+            @if (canEntry)
+            {
+                <a asp-controller="Entry" asp-action="Index">إدخال اليوم</a>
+            }
+            @if (canCenters)
+            {
+                <a asp-controller="Centers" asp-action="Index">المراكز</a>
+            }
+            @if (canTypes)
+            {
+                <a asp-controller="SampleTypes" asp-action="Index">أنواع التحاليل</a>
+            }
+            @if (canUsers)
+            {
+                <a asp-controller="Users" asp-action="Index">المستخدمون</a>
+            }
+            @if (canAudit)
+            {
+                <a asp-controller="Audit" asp-action="Index">سجل التتبّع</a>
+            }
+        </div>
+    </nav>
+}

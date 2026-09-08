@@ -27,6 +27,11 @@
         </div>
     </div>
 
+    @if (User.Identity?.IsAuthenticated ?? false)
+    {
+        @await Html.PartialAsync("_AdminNav")
+    }
+
     <div class="wrap">
         @RenderBody()
     </div>

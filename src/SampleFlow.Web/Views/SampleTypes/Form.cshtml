@@ -1,0 +1,49 @@
+@model SampleTypeFormViewModel
+@{
+    var isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? "تعديل نوع تحليل" : "نوع تحليل جديد";
+    ViewData["Subtitle"] = "لوحة الإدارة";
+}
+
+<div class="page-head">
+    <div><h2>@(isEdit ? "تعديل نوع تحليل" : "إضافة نوع تحليل")</h2></div>
+</div>
+
+<div class="card" style="max-width:620px;">
+    <div class="card-b">
+        <form asp-action="@(isEdit ? "Edit" : "Create")" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert-error"></div>
+            @if (isEdit)
+            {
+                <input type="hidden" asp-for="Id" />
+            }
+
+            <div class="form-grid">
+                <div class="field">
+                    <label asp-for="Code"></label>
+                    <input asp-for="Code" autofocus />
+                    <span asp-validation-for="Code" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Name"></label>
+                    <input asp-for="Name" />
+                    <span asp-validation-for="Name" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="DisplayOrder"></label>
+                    <input asp-for="DisplayOrder" type="number" min="0" />
+                    <span asp-validation-for="DisplayOrder" class="field-validation-error"></span>
+                </div>
+            </div>
+
+            <label class="checkbox">
+                <input asp-for="IsActive" /> <span>نشط</span>
+            </label>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-amber btn-sm">حفظ</button>
+                <a class="btn btn-ghost btn-sm" asp-action="Index">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>

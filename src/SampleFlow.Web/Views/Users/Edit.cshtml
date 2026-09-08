@@ -1,0 +1,40 @@
+@model UserEditViewModel
+@{
+    ViewData["Title"] = "تعديل مستخدم";
+    ViewData["Subtitle"] = "لوحة الإدارة";
+}
+
+<div class="page-head">
+    <div><h2>تعديل مستخدم</h2><div class="desc">@Model.Email</div></div>
+</div>
+
+<div class="card" style="max-width:620px;">
+    <div class="card-b">
+        <form asp-action="Edit" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert-error"></div>
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Email" />
+
+            <div class="form-grid">
+                <div class="field">
+                    <label asp-for="Role"></label>
+                    <select asp-for="Role" asp-items="Model.RoleOptions"></select>
+                    <span asp-validation-for="Role" class="field-validation-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="CenterId"></label>
+                    <select asp-for="CenterId" asp-items="Model.CenterOptions">
+                        <option value="">— (للمشرف/الأدمن)</option>
+                    </select>
+                    <span asp-validation-for="CenterId" class="field-validation-error"></span>
+                </div>
+            </div>
+            <div class="desc" style="margin-top:.5rem;">اختر مركزاً فقط لدور «Center».</div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-amber btn-sm">حفظ</button>
+                <a class="btn btn-ghost btn-sm" asp-action="Index">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
