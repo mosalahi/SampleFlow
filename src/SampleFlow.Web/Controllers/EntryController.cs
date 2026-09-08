@@ -16,6 +16,9 @@ namespace SampleFlow.Web.Controllers;
 [Authorize(Policy = PermissionKeys.EntriesCreate)]
 public class EntryController : Controller
 {
+    // نافذة الإدخال المسموحة: اليوم وحتى هذا العدد من الأيام للخلف (لا مستقبل).
+    private const int MaxBackDays = 7;
+
     private readonly ApplicationDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IPermissionService _permissions;
@@ -30,6 +33,9 @@ public class EntryController : Controller
         _permissions = permissions;
     }
 
+    private static DateOnly Today => DateOnly.FromDateTime(DateTime.Today);
+    private static DateOnly Earliest => Today.AddDays(-MaxBackDays);
+
     [HttpGet]
     public async Task<IActionResult> Index(DateOnly? date, int? centerId)
     {
@@ -40,9 +46,20 @@ public class EntryController : Controller
         }
 
         var perms = await _permissions.GetEffectivePermissionsAsync(user.Id);
-        var entryDate = date ?? DateOnly.FromDateTime(DateTime.Today);
+
+        // قصر التاريخ المعروض ضمن النافذة المسموحة.
+        var entryDate = date ?? Today;
+        if (entryDate > Today)
+        {
+            entryDate = Today;
+        }
+        else if (entryDate < Earliest)
+        {
+            entryDate = Earliest;
+        }
 
         var vm = new DailyEntryViewModel { EntryDate = entryDate };
+        SetDateBounds(vm);
         await ResolveCenterAsync(vm, user, centerId);
 
         var activeTypes = await GetActiveSampleTypesAsync();
@@ -91,6 +108,16 @@ public class EntryController : Controller
 
         var perms = await _permissions.GetEffectivePermissionsAsync(user.Id);
 
+        // تحقّق نافذة التاريخ على الخادم (لا مستقبل، ولا أقدم من الحد).
+        if (model.EntryDate > Today)
+        {
+            ModelState.AddModelError(nameof(model.EntryDate), "لا يمكن اختيار تاريخ مستقبلي.");
+        }
+        else if (model.EntryDate < Earliest)
+        {
+            ModelState.AddModelError(nameof(model.EntryDate), $"لا يمكن الإدخال لتاريخ أقدم من {MaxBackDays} أيام.");
+        }
+
         // فرض المركز: مستخدم المركز مقفل على مركزه؛ الأدمن يختار مركزاً نشطاً.
         var centerId = user.CenterId ?? model.CenterId;
         if (!user.CenterId.HasValue &&
@@ -108,7 +135,9 @@ public class EntryController : Controller
             .Include(e => e.Details)
             .FirstOrDefaultAsync(e => e.CenterId == centerId && e.EntryDate == model.EntryDate);
 
-        if (existing is null)
+        var isNew = existing is null;
+
+        if (isNew)
         {
             if (!perms.Contains(PermissionKeys.EntriesCreate))
             {
@@ -127,12 +156,10 @@ public class EntryController : Controller
                     .Select(s => new DailyEntryDetail { SampleTypeId = s.SampleTypeId, Count = s.Count })
                     .ToList(),
             });
-
-            TempData["Success"] = "تم حفظ إدخال اليوم.";
         }
         else
         {
-            if (!CanEditEntry(perms, user, existing.CenterId))
+            if (!CanEditEntry(perms, user, existing!.CenterId))
             {
                 TempData["Error"] = "لا تملك صلاحية تعديل إدخال هذا اليوم.";
                 return RedirectToAction(nameof(Index), new { date = model.EntryDate.ToString("yyyy-MM-dd"), centerId = RedirectCenter(user, centerId) });
@@ -155,8 +182,6 @@ public class EntryController : Controller
                     detail.Count = s.Count;
                 }
             }
-
-            TempData["Success"] = "تم تحديث إدخال اليوم.";
         }
 
         try
@@ -165,11 +190,20 @@ public class EntryController : Controller
         }
         catch (DbUpdateException)
         {
+            _db.ChangeTracker.Clear();
             ModelState.AddModelError(string.Empty, "تعذّر الحفظ — قد يكون هناك إدخال آخر لنفس المركز واليوم.");
             return await RebuildAsync(model, user, centerId);
         }
 
+        // رسالة النجاح تُضبط بعد نجاح الحفظ فقط.
+        TempData["Success"] = isNew ? "تم حفظ إدخال اليوم." : "تم تحديث إدخال اليوم.";
         return RedirectToAction(nameof(Index), new { date = model.EntryDate.ToString("yyyy-MM-dd"), centerId = RedirectCenter(user, centerId) });
+    }
+
+    private static void SetDateBounds(DailyEntryViewModel vm)
+    {
+        vm.MinDate = Earliest;
+        vm.MaxDate = Today;
     }
 
     private async Task ResolveCenterAsync(DailyEntryViewModel vm, ApplicationUser user, int? requestedCenterId)
@@ -198,6 +232,8 @@ public class EntryController : Controller
 
     private async Task<IActionResult> RebuildAsync(DailyEntryViewModel model, ApplicationUser user, int centerId)
     {
+        SetDateBounds(model);
+
         if (user.CenterId.HasValue)
         {
             model.IsCenterLocked = true;
@@ -211,6 +247,23 @@ public class EntryController : Controller
             model.CenterOptions = centers.Select(c => new SelectListItem(c.Name, c.Id.ToString())).ToList();
             model.CenterName = centers.FirstOrDefault(c => c.Id == centerId)?.Name ?? string.Empty;
         }
+
+        // إعادة بناء خانات التحاليل من الأنواع النشطة مع الحفاظ على القيم المُدخلة،
+        // حتى لا تختفي الحقول عند فشل التحقق.
+        var activeTypes = await GetActiveSampleTypesAsync();
+        var postedCounts = (model.Samples ?? new())
+            .Where(s => s.SampleTypeId > 0)
+            .ToDictionary(s => s.SampleTypeId, s => s.Count);
+
+        model.Samples = activeTypes
+            .Select(t => new SampleInputViewModel
+            {
+                SampleTypeId = t.Id,
+                Code = t.Code,
+                Name = t.Name,
+                Count = postedCounts.TryGetValue(t.Id, out var c) ? c : 0,
+            })
+            .ToList();
 
         model.CanEdit = true;
         return View(model);

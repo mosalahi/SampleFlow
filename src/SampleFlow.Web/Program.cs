@@ -24,7 +24,19 @@ if (Directory.Exists(fontsDir))
     }
 }
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // رسائل ربط النموذج بالعربية (بدل الرسائل الإنجليزية الافتراضية).
+    var messages = options.ModelBindingMessageProvider;
+    messages.SetValueMustNotBeNullAccessor(_ => "هذا الحقل مطلوب.");
+    messages.SetMissingBindRequiredValueAccessor(_ => "هذا الحقل مطلوب.");
+    messages.SetMissingKeyOrValueAccessor(() => "هذا الحقل مطلوب.");
+    messages.SetAttemptedValueIsInvalidAccessor((value, field) => $"القيمة «{value}» غير صالحة للحقل {field}.");
+    messages.SetUnknownValueIsInvalidAccessor(_ => "القيمة المُدخلة غير صالحة.");
+    messages.SetValueIsInvalidAccessor(value => $"القيمة «{value}» غير صالحة.");
+    messages.SetValueMustBeANumberAccessor(field => $"الحقل {field} يجب أن يكون رقماً.");
+    messages.SetNonPropertyValueMustBeANumberAccessor(() => "القيمة يجب أن تكون رقماً.");
+});
 
 // مصدر معلومات التتبّع من الطلب الحالي — يُسجَّل قبل الاستمرارية ليأخذ الأولوية.
 builder.Services.AddHttpContextAccessor();

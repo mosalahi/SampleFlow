@@ -11,6 +11,6 @@ public sealed class SampleInputViewModel
 
     public string Name { get; set; } = string.Empty;
 
-    [Range(0, int.MaxValue, ErrorMessage = "القيمة يجب أن تكون صفراً أو أكثر")]
+    [Range(0, 100000, ErrorMessage = "أدخل عدداً بين 0 و100000")]
     public int Count { get; set; }
 }

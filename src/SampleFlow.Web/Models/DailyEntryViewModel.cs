@@ -22,11 +22,15 @@ public sealed class DailyEntryViewModel
     [Display(Name = "التاريخ")]
     public DateOnly EntryDate { get; set; }
 
-    [Range(0, int.MaxValue, ErrorMessage = "القيمة يجب أن تكون صفراً أو أكثر")]
+    /// <summary>حدود التاريخ المسموح بها في الواجهة.</summary>
+    public DateOnly MinDate { get; set; }
+    public DateOnly MaxDate { get; set; }
+
+    [Range(0, 100000, ErrorMessage = "أدخل عدداً بين 0 و100000")]
     [Display(Name = "عدد المراجعين")]
     public int Visitors { get; set; }
 
-    [Range(0, int.MaxValue, ErrorMessage = "القيمة يجب أن تكون صفراً أو أكثر")]
+    [Range(0, 100000, ErrorMessage = "أدخل عدداً بين 0 و100000")]
     [Display(Name = "عدد الرحلات")]
     public int Trips { get; set; }
 

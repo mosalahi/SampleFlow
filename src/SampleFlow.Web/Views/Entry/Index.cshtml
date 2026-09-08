@@ -3,6 +3,8 @@
     ViewData["Title"] = "إدخال بيانات اليوم";
     ViewData["Subtitle"] = Model.IsCenterLocked ? Model.CenterName : "شاشة الإدخال";
     var readOnly = !Model.CanEdit;
+    var minDate = Model.MinDate.ToString("yyyy-MM-dd");
+    var maxDate = Model.MaxDate.ToString("yyyy-MM-dd");
 }
 
 <div class="page-head">
@@ -48,17 +50,20 @@
                     </div>
                     <div>
                         <label asp-for="EntryDate"></label>
-                        <input asp-for="EntryDate" type="date" onchange="reloadDate(this.value)" />
+                        <input asp-for="EntryDate" type="date" min="@minDate" max="@maxDate"
+                               readonly="@readOnly" onchange="reloadDate(this.value)" />
                         <span asp-validation-for="EntryDate" class="field-validation-error"></span>
                     </div>
                     <div>
                         <label asp-for="Visitors"></label>
-                        <input asp-for="Visitors" type="number" min="0" style="text-align:center; font-weight:600;" />
+                        <input asp-for="Visitors" type="number" min="0" max="100000" readonly="@readOnly"
+                               style="text-align:center; font-weight:600;" />
                         <span asp-validation-for="Visitors" class="field-validation-error"></span>
                     </div>
                     <div>
                         <label asp-for="Trips"></label>
-                        <input asp-for="Trips" type="number" min="0" style="text-align:center; font-weight:600;" />
+                        <input asp-for="Trips" type="number" min="0" max="100000" readonly="@readOnly"
+                               style="text-align:center; font-weight:600;" />
                         <span asp-validation-for="Trips" class="field-validation-error"></span>
                     </div>
                 </div>
@@ -81,8 +86,8 @@
                                 <input type="hidden" asp-for="Samples[i].SampleTypeId" />
                                 <input type="hidden" asp-for="Samples[i].Code" />
                                 <input type="hidden" asp-for="Samples[i].Name" />
-                                <input asp-for="Samples[i].Count" type="number" min="0"
-                                       class="sample-count" oninput="recalcTotal()" />
+                                <input asp-for="Samples[i].Count" type="number" min="0" max="100000"
+                                       readonly="@readOnly" class="sample-count" oninput="recalcTotal()" />
                                 <span asp-validation-for="Samples[i].Count" class="field-validation-error"></span>
                             </div>
                         }
